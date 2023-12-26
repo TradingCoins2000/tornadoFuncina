@@ -87,9 +87,6 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
         bytes calldata _proof,
         bytes32 _root,
         bytes32 _nullifierHash,
-        /*
-        quitado el payable...
-        */
         address _recipient,
         address _relayer, // do not use this
         uint256 _fee, // do not use this
@@ -107,12 +104,8 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
                 [
                     uint256(_root),
                     uint256(_nullifierHash),
-                    //add those:
                     uint256(uint160(_recipient)),
                     uint256(uint160(_relayer)),
-                    //instead of the:
-                    //uint256(_recipient),
-                    //uint256(_relayer),
                     _fee,
                     _refund
                 ]
@@ -132,17 +125,4 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
     function isSpent(bytes32 _nullifierHash) public view returns (bool) {
         return nullifierHashes[_nullifierHash];
     }
-
-    /** @dev whether an array of notes is already spent */
-    // function isSpentArray(
-    //     // I will not use this too, but let it here for now...
-    //     bytes32[] calldata _nullifierHashes
-    // ) external view returns (bool[] memory spent) {
-    //     spent = new bool[](_nullifierHashes.length);
-    //     for (uint256 i = 0; i < _nullifierHashes.length; i++) {
-    //         if (isSpent(_nullifierHashes[i])) {
-    //             spent[i] = true;
-    //         }
-    //     }
-    // }
 }

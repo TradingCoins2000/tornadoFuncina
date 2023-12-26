@@ -15,6 +15,7 @@ let web3, contract, netId, circuit, proving_key, groth16;
 const MERKLE_TREE_HEIGHT = 20;
 const RPC_URL = process.env.SEPOLIA_URL;
 const PRIVATE_KEY = process.env.ETH_PK;
+const WALLET2 = process.env.WALLET_2;
 
 const CONTRACT_ADDRESS = "0x5c093a0dE175B839B1E0D2924DF47a090175876c"; // address of the contract ERC721Tronado2.sol!! at sepolia by me(by far).
 const CONTRACT_ADDRESS2 = process.env.TOKEN; // address of the contractVotePres.sol at sepolia by me(by far).
@@ -58,7 +59,7 @@ async function deposit() {
   console.log("Sending deposit transaction...");
   /////////////////////////////////
 
-  const denomination = 13; //ver como correr ese numero, es el index del nft;
+  const denomination = 30; //ver como correr ese numero, es el index del nft;
   ///////////////////////////////////
   ////////////////////////////////////
 
@@ -66,18 +67,23 @@ async function deposit() {
   const tx2 = await contract2.methods
     .safeMint(web3.eth.defaultAccount)
     .send({ from: web3.eth.defaultAccount, gas: 2e6 });
-  console.log("Mint new NFT? hash=>", tx2.transactionHash);
+  console.log(
+    "Mint new NFT! denomination, hash=>",
+    denomination,
+    tx2.transactionHash
+  );
   // aprueba el nft original para la cuenta tornado:
   const tx3 = await contract2.methods
     .approve(CONTRACT_ADDRESS, denomination)
     .send({ from: web3.eth.defaultAccount, gas: 2e6 });
-  console.log("aprobado el delagado? hash=>", tx3.transactionHash);
+  console.log("aprobado el delagar! hash=>", tx3.transactionHash);
   const tx = await contract.methods
     .deposit(toHex(deposit.commitment), denomination)
     .send({ from: web3.eth.defaultAccount, gas: 2e6 });
   console.log("Deposited !!!!");
-
-  return `tornado-${netId}-${toHex(deposit.preimage, 62)}`;
+  //console.log("deposit.preimage=>", toHex(deposit.preimage, 62));
+  //return `tornado-${netId}-${toHex(deposit.preimage, 62)}`;
+  return `${toHex(deposit.preimage, 62)}`;
 }
 
 /**
@@ -89,8 +95,8 @@ async function withdraw(note, recipient) {
   const deposit = parseNote(note);
   const { proof, args } = await generateSnarkProof(deposit, recipient);
   console.log("Sending withdrawal transaction...");
-  console.log("Withdraw FAKE");
-  console.log("proof=>", proof);
+  console.log("Withdraw");
+  // console.log("proof=>", proof);
   //console.log("args=>", args);
   const tx = await contract.methods
     .withdraw(proof, ...args)
@@ -105,10 +111,13 @@ async function withdraw(note, recipient) {
 function parseNote(noteString) {
   const noteRegex =
     // /tornado-(?<currency>\w+)-(?<amount>[\d.]+)-(?<netId>\d+)-0x(?<note>[0-9a-fA-F]{124})/g;
-    /tornado-(?<netId>\d+)-0x(?<note>[0-9a-fA-F]{124})/g;
+    // /tornado-(?<netId>\d+)-0x(?<note>[0-9a-fA-F]{124})/g;
+    /0x(?<note>[0-9a-fA-F]{124})/g;
   const match = noteRegex.exec(noteString);
+  //console.log("match groups note =>", match.groups.note);
   // we are ignoring `currency`, `amount`, and `netId` for this minimal example
   const buf = Buffer.from(match.groups.note, "hex");
+  // const buf = Buffer.from(noteString, "hex");
   const nullifier = bigInt.leBuff2int(buf.slice(0, 31));
   const secret = bigInt.leBuff2int(buf.slice(31, 62));
   return createDeposit(nullifier, secret);
@@ -231,10 +240,12 @@ async function main() {
   // eslint-disable-next-line require-atomic-updates
   web3.eth.defaultAccount = account.address;
 
+  //console.log("web3.eth.defaultAccount=>", web3.eth.defaultAccount);
+  //console.log("WALLET2=>", WALLET2);
   const note = await deposit();
-  console.log("Deposited note:", note);
-  await withdraw(note, web3.eth.defaultAccount);
-  console.log("Done");
+  //await withdraw(note, web3.eth.defaultAccount);
+  await withdraw(note, WALLET2);
+  console.log("Done!!!!");
   process.exit();
 }
 
