@@ -1,5 +1,10 @@
 require("dotenv").config();
+//const fetch = (...args) =>
+//import("node-fetch").then(({ default: fetch }) => fetch(...args));
+//let f1 = require("../../final2/alchemy-sdk-script.mjs");
 
+//import { f1 } from "../../final2/alchemy-sdk-script.mjs";
+//const {f1} = require("../../final2/alchemy-sdk-script.mjs");
 const fs = require("fs");
 const assert = require("assert");
 const { bigInt } = require("snarkjs");
@@ -59,7 +64,7 @@ async function deposit() {
   console.log("Sending deposit transaction...");
   /////////////////////////////////
 
-  const denomination = 30; //ver como correr ese numero, es el index del nft;
+  const denomination = 36; //ver como correr ese numero, es el index del nft;
   ///////////////////////////////////
   ////////////////////////////////////
 
@@ -87,7 +92,7 @@ async function deposit() {
 }
 
 /**
- * Do an ETH withdrawal
+ * Do the withdrawal
  * @param note Note to withdraw
  * @param recipient Recipient address
  */
@@ -235,15 +240,16 @@ async function main() {
     require("../artifacts/contracts/VotePresNFT.sol/VotePresNFT.json").abi,
     CONTRACT_ADDRESS2
   );
+
   const account = web3.eth.accounts.privateKeyToAccount("0x" + PRIVATE_KEY);
   web3.eth.accounts.wallet.add("0x" + PRIVATE_KEY);
   // eslint-disable-next-line require-atomic-updates
   web3.eth.defaultAccount = account.address;
+  //
+  //const total = await contract2.methods.balanceOf(account.address).call();
 
-  //console.log("web3.eth.defaultAccount=>", web3.eth.defaultAccount);
-  //console.log("WALLET2=>", WALLET2);
   const note = await deposit();
-  //await withdraw(note, web3.eth.defaultAccount);
+  console.log("note=>", note);
   await withdraw(note, WALLET2);
   console.log("Done!!!!");
   process.exit();
